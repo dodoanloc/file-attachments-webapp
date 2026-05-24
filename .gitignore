@@ -1,0 +1,16 @@
+# Hermes Webapp Factory defaults
+.venv/
+venv/
+__pycache__/
+*.pyc
+node_modules/
+.env
+*.log
+backups/
+data/uploads/
+*.tmp
+.DS_Store
+data/
+*.sqlite
+*.sqlite3
+*.db

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Đính kèm file máy chủ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="shell">
+    <section class="hero card">
+      <div>
+        <p class="eyebrow">FILE ATTACHMENT SERVER</p>
+        <h1>Đính kèm file vào máy chủ</h1>
+        <p class="muted">Dùng tài khoản hệ thống Thu thập CCCD. File tự xoá sau 7 ngày, giới hạn mỗi file 500 MB.</p>
+      </div>
+      <button id="logoutBtn" class="ghost hidden" type="button">Đăng xuất</button>
+    </section>
+
+    <section id="loginCard" class="card panel">
+      <h2>Đăng nhập</h2>
+      <div class="form-grid">
+        <input id="usernameInput" autocomplete="username" placeholder="Tên đăng nhập CCCD">
+        <input id="passwordInput" type="password" autocomplete="current-password" placeholder="Mật khẩu">
+        <button id="loginBtn" class="primary" type="button">Đăng nhập</button>
+      </div>
+      <div id="loginStatus" class="status info">Vui lòng đăng nhập để tải file.</div>
+    </section>
+
+    <section id="appCard" class="card panel hidden">
+      <div class="panel-head">
+        <div>
+          <h2>Upload file</h2>
+          <p id="currentUser" class="muted"></p>
+        </div>
+        <button id="refreshBtn" class="ghost" type="button">Làm mới</button>
+      </div>
+      <div class="upload-row">
+        <input id="fileInput" type="file">
+        <button id="uploadBtn" class="primary" type="button">Tải lên</button>
+      </div>
+      <div id="uploadStatus" class="status info">Chọn file để tải lên máy chủ.</div>
+    </section>
+
+    <section id="listCard" class="card panel hidden">
+      <div class="panel-head">
+        <div>
+          <h2>Danh sách file đính kèm</h2>
+          <p class="muted">Tên file, dung lượng, ngày tải lên, người tải lên.</p>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Tên file</th>
+              <th>Dung lượng</th>
+              <th>Ngày tải lên</th>
+              <th>Người tải lên</th>
+              <th>Hết hạn</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="filesBody">
+            <tr><td colspan="6" class="empty">Chưa có dữ liệu.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>
