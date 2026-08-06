@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+  <title>Đính kèm file máy chủ</title>
+  <link rel="stylesheet" href="assets/fonts/plus-jakarta-sans.css?v=local-20260610">
+  <link rel="stylesheet" href="styles.css?v=offline-font-20260610">
+</head>
+<body>
+  <main class="shell">
+    <section class="hero card">
+      <div>
+        <p class="eyebrow">FILE ATTACHMENT SERVER</p>
+        <h1>Đính kèm file vào máy chủ</h1>
+        <p class="muted">Đính kèm cả thế giới vào đây!</p>
+      </div>
+      <button id="logoutBtn" class="ghost hidden" type="button">Đăng xuất</button>
+    </section>
+
+    <section id="loginCard" class="card panel">
+      <h2>Đăng nhập</h2>
+      <div class="form-grid">
+        <input id="usernameInput" autocomplete="username" placeholder="Tên đăng nhập CCCD">
+        <input id="passwordInput" type="password" autocomplete="current-password" placeholder="Mật khẩu">
+        <button id="loginBtn" class="primary" type="button">Đăng nhập</button>
+      </div>
+      <div id="loginStatus" class="status info">Vui lòng đăng nhập để tải file.</div>
+    </section>
+
+    <section id="appCard" class="card panel hidden">
+      <div class="panel-head">
+        <div>
+          <h2>Upload file</h2>
+          <p id="currentUser" class="muted"></p>
+        </div>
+        <div class="panel-actions">
+          <button id="refreshBtn" class="ghost" type="button">Làm mới</button>
+        </div>
+      </div>
+      <div class="upload-row">
+        <input id="fileInput" type="file" multiple>
+        <button id="uploadBtn" class="primary" type="button">Tải lên</button>
+      </div>
+      <div class="statement-actions">
+        <button id="overdraftStatementBtn" class="primary alt" type="button">Đính kèm sao kê thấu chi</button>
+        <button id="guaranteeStatementBtn" class="primary alt" type="button">Đính kèm sao kê bảo lãnh</button>
+      </div>
+      <div id="uploadStatus" class="status info">Chọn một hoặc nhiều file/ảnh để tải lên máy chủ.</div>
+    </section>
+
+    <section id="listCard" class="card panel hidden">
+      <div class="panel-head">
+        <div>
+          <h2>Danh sách file đính kèm</h2>
+          <p class="muted">Tên file, dung lượng, ngày tải lên, người tải lên.</p>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Tên file</th>
+              <th>Dung lượng</th>
+              <th>Ngày tải lên</th>
+              <th>Người tải lên</th>
+              <th>Hết hạn</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="filesBody">
+            <tr><td colspan="6" class="empty">Chưa có dữ liệu.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <div id="statementModal" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal-card card">
+      <div class="panel-head">
+        <div>
+          <h2 id="statementModalTitle">Đính kèm sao kê</h2>
+          <p id="statementModalHint" class="muted">File .xls, .xlsx, .csv. Workflow n8n sẽ dùng file mới nhất.</p>
+        </div>
+        <button id="statementCloseBtn" class="ghost" type="button">Đóng</button>
+      </div>
+      <input id="statementFileInput" type="file" accept=".xls,.xlsx,.csv">
+      <div class="toolbar-inline">
+        <button id="statementUploadBtn" class="primary" type="button">Lưu sao kê</button>
+      </div>
+      <div id="statementStatus" class="status info">Chọn file sao kê để lưu trên máy chủ nội bộ.</div>
+      <div id="statementLatest" class="muted small"></div>
+    </div>
+  </div>
+  <script src="app.js?v=statement-upload-20260612"></script>
+</body>
+</html>
