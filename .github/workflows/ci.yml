@@ -1,0 +1,31 @@
+name: CI
+
+on:
+  push:
+    branches-ignore: [main, master]
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Python syntax and tests
+        shell: bash
+        run: |
+          set -e
+          files=$(find . -type f -name "*.py" -not -path "./.venv/*" -not -path "./venv/*" -not -path "./data/*" -not -path "./backups/*")
+          if [ -n "$files" ]; then python -m py_compile $files; fi
+          if [ -d tests ] && find tests -type f | grep -q .; then python -m pytest -q; fi
+      - uses: actions/setup-node@v4
+        if: hashFiles('package.json') != ''
+        with:
+          node-version: "20"
+      - name: Node checks
+        shell: bash
+        run: |
+          set -e
+          if [ -f package.json ]; then npm ci --ignore-scripts || npm install --ignore-scripts; npm test --if-present; fi
