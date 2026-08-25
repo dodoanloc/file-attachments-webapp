@@ -1,0 +1,7 @@
+# Admin reviewer bắt buộc review thay đổi
+* @ktnqagribanktx-lang
+
+# CI/deploy policy cần reviewer riêng
+.github/ @ktnqagribanktx-lang
+.github/workflows/ @ktnqagribanktx-lang
+ROLLBACK.md @ktnqagribanktx-lang
