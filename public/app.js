@@ -1,35 +1,61 @@
 const MAX_FILE_SIZE = 500 * 1024 * 1024;
 const STORAGE_KEY = 'file_attachments_user';
+const THEME_KEY = 'file-attachments-theme';
+
+const $ = id => document.getElementById(id);
 
 const els = {
-  loginCard: document.getElementById('loginCard'),
-  appCard: document.getElementById('appCard'),
-  listCard: document.getElementById('listCard'),
-  usernameInput: document.getElementById('usernameInput'),
-  passwordInput: document.getElementById('passwordInput'),
-  loginBtn: document.getElementById('loginBtn'),
-  logoutBtn: document.getElementById('logoutBtn'),
-  loginStatus: document.getElementById('loginStatus'),
-  uploadStatus: document.getElementById('uploadStatus'),
-  currentUser: document.getElementById('currentUser'),
-  fileInput: document.getElementById('fileInput'),
-  uploadBtn: document.getElementById('uploadBtn'),
-  refreshBtn: document.getElementById('refreshBtn'),
-  filesBody: document.getElementById('filesBody'),
-  overdraftStatementBtn: document.getElementById('overdraftStatementBtn'),
-  guaranteeStatementBtn: document.getElementById('guaranteeStatementBtn'),
-  statementModal: document.getElementById('statementModal'),
-  statementModalTitle: document.getElementById('statementModalTitle'),
-  statementModalHint: document.getElementById('statementModalHint'),
-  statementCloseBtn: document.getElementById('statementCloseBtn'),
-  statementFileInput: document.getElementById('statementFileInput'),
-  statementUploadBtn: document.getElementById('statementUploadBtn'),
-  statementStatus: document.getElementById('statementStatus'),
-  statementLatest: document.getElementById('statementLatest'),
+  loginCard: $('login'),
+  appCard: $('app'),
+  usernameInput: $('usernameInput'),
+  passwordInput: $('passwordInput'),
+  loginBtn: $('loginBtn'),
+  logoutBtn: $('logoutBtn'),
+  loginStatus: $('loginStatus'),
+  uploadStatus: $('uploadStatus'),
+  currentUser: $('currentUser'),
+  fileInput: $('fileInput'),
+  uploadBtn: $('uploadBtn'),
+  refreshBtn: $('refreshBtn'),
+  filesBody: $('filesBody'),
+  overdraftStatementBtn: $('overdraftStatementBtn'),
+  guaranteeStatementBtn: $('guaranteeStatementBtn'),
+  statementModal: $('statementModal'),
+  statementModalTitle: $('statementModalTitle'),
+  statementModalHint: $('statementModalHint'),
+  statementCloseBtn: $('statementCloseBtn'),
+  statementFileInput: $('statementFileInput'),
+  statementUploadBtn: $('statementUploadBtn'),
+  statementStatus: $('statementStatus'),
+  statementLatest: $('statementLatest'),
 };
 
 let session = null;
 
+/* ---------- Theme ---------- */
+function setTheme(t) {
+  document.documentElement.dataset.theme = t;
+  try { localStorage.setItem(THEME_KEY, t); } catch (_) {}
+}
+(function () {
+  const toggle = (btn) => {
+    if (!btn) return;
+    btn.addEventListener('click', () => {
+      const cur = document.documentElement.dataset.theme || 'light';
+      setTheme(cur === 'dark' ? 'light' : 'dark');
+    });
+  };
+  toggle($('theme-toggle'));
+  toggle($('login-theme-toggle'));
+  const pw = $('passwordInput'), tg = document.querySelector('[data-pw-toggle]');
+  if (pw && tg) tg.addEventListener('click', () => {
+    const show = pw.type === 'password';
+    pw.type = show ? 'text' : 'password';
+    tg.textContent = show ? 'Ẩn' : 'Hiện';
+  });
+})();
+
+/* ---------- Helpers ---------- */
 function setStatus(el, text, type = 'info') {
   el.className = `status ${type}`;
   el.textContent = text;
@@ -61,15 +87,15 @@ function authQuery() {
   return `username=${encodeURIComponent(session.username)}&password=${encodeURIComponent(session.password)}`;
 }
 
+/* ---------- Auth ---------- */
 function applySession() {
   session = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
   const loggedIn = !!session?.username && !!session?.password;
-  els.loginCard.classList.toggle('hidden', loggedIn);
-  els.appCard.classList.toggle('hidden', !loggedIn);
-  els.listCard.classList.toggle('hidden', !loggedIn);
-  els.logoutBtn.classList.toggle('hidden', !loggedIn);
+  document.body.classList.toggle('auth-pending', !loggedIn);
+  els.loginCard.hidden = loggedIn;
+  els.appCard.hidden = !loggedIn;
   if (loggedIn) {
-    els.currentUser.textContent = `Đang đăng nhập: ${session.username}${session.role ? ` (${session.role})` : ''}`;
+    els.currentUser.textContent = session.username + (session.role ? ` • ${session.role}` : '');
     loadFiles();
   }
 }
@@ -105,6 +131,7 @@ function logout() {
   applySession();
 }
 
+/* ---------- Files ---------- */
 async function loadFiles() {
   if (!session) return;
   els.filesBody.innerHTML = '<tr><td colspan="6" class="empty">Đang tải danh sách...</td></tr>';
@@ -131,7 +158,7 @@ function renderFiles(items) {
       <td>${esc(item.uploaded_by)}</td>
       <td>${esc(fmtDate(item.expires_at))}</td>
       <td class="actions">
-        <button class="ghost" type="button" data-file-id="${esc(item.id)}" data-file-name="${esc(item.original_name)}" onclick="downloadFile(this.dataset.fileId, this.dataset.fileName)">Tải xuống</button>
+        <button class="secondary" type="button" data-file-id="${esc(item.id)}" data-file-name="${esc(item.original_name)}" onclick="downloadFile(this.dataset.fileId, this.dataset.fileName)">Tải xuống</button>
         <button class="danger" type="button" onclick="deleteFile('${esc(item.id)}')">Xoá</button>
       </td>
     </tr>
@@ -246,6 +273,7 @@ async function deleteFile(id) {
   }
 }
 
+/* ---------- Statements ---------- */
 let currentStatementType = 'overdraft';
 const STATEMENT_LABELS = { overdraft: 'sao kê thấu chi', guarantee: 'sao kê bảo lãnh' };
 
@@ -300,6 +328,7 @@ async function uploadStatement() {
   }
 }
 
+/* ---------- Events ---------- */
 els.loginBtn.addEventListener('click', login);
 els.passwordInput.addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
 els.logoutBtn.addEventListener('click', logout);
