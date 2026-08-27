@@ -296,12 +296,12 @@ function openStatementModal(type) {
   els.statementModalHint.textContent = 'File .xls, .xlsx, .csv. Workflow n8n sẽ dùng file mới nhất để thông báo đến hạn.';
   els.statementFileInput.value = '';
   setStatus(els.statementStatus, `Chọn file ${label} để lưu trên máy chủ nội bộ.`, 'info');
-  els.statementModal.classList.remove('hidden');
+  els.statementModal.hidden = false;
   loadStatementLatest(type);
 }
 
 function closeStatementModal() {
-  els.statementModal.classList.add('hidden');
+  els.statementModal.hidden = true;
 }
 
 async function uploadStatement() {

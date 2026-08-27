@@ -543,3 +543,11 @@ main { display: contents }
 .status.success{background:rgba(23,115,73,.12);color:#177349}
 .status.error{background:rgba(179,38,38,.12);color:#b32626}
 body.auth-pending #app{display:none}
+
+/* ===== 8894 statement buttons (brand red) ===== */
+button.danger, a.danger {
+  background:#ae1c3f; color:#fff; border:1px solid #ae1c3f;
+}
+button.danger:hover { background:#8e1733; border-color:#8e1733; }
+[data-theme="dark"] button.danger { background:#c22a4f; border-color:#c22a4f; color:#fff; }
+[data-theme="dark"] button.danger:hover { background:#a11f42; }

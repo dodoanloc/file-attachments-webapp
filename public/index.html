@@ -6,7 +6,7 @@
   <script>document.documentElement.dataset.theme=localStorage.getItem('file-attachments-theme')||'light'</script>
   <link rel="preload" href="assets/fonts/InterVariable.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="icon" href="assets/img/logo_agribank.png">
-  <link rel="stylesheet" href="styles.css?v=20260827-hdclone5-8894">
+  <link rel="stylesheet" href="styles.css?v=20260827-hdclone5-fixmodal">
 </head>
 <body class="auth-pending">
 <section id="login" class="login-wrap auth-panel-wrap" hidden>
@@ -69,8 +69,8 @@
             <small style="color:var(--hd-text-light)">Chọn một hoặc nhiều file/ảnh. File tự xoá sau 7 ngày.</small>
           </div>
           <div class="actions">
-            <button id="overdraftStatementBtn" class="secondary" type="button">Đính kèm sao kê thấu chi</button>
-            <button id="guaranteeStatementBtn" class="secondary" type="button">Đính kèm sao kê bảo lãnh</button>
+            <button id="overdraftStatementBtn" class="danger" type="button">Đính kèm sao kê thấu chi</button>
+            <button id="guaranteeStatementBtn" class="danger" type="button">Đính kèm sao kê bảo lãnh</button>
           </div>
         </div>
         <div class="upload-row">
@@ -125,6 +125,6 @@
     <div id="statementLatest" class="muted small"></div>
   </div>
 </div>
-<script src="app.js?v=20260827-hdclone5-8894"></script>
+<script src="app.js?v=20260827-hdclone5-fixmodal"></script>
 </body>
 </html>
