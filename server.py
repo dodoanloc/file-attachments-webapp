@@ -553,7 +553,16 @@ def download_file(attachment_id: str, username: str, password: str):
         raise HTTPException(status_code=404, detail='File không tồn tại hoặc đã hết hạn')
     path = UPLOAD_DIR / row['stored_name']
     if not path.exists():
-        raise HTTPException(status_code=404, detail='File không tồn tại trên máy chủ')
+        # Auto-repair: stored_name may be stale after MIS CSV extraction.
+        # Look for any file in UPLOAD_DIR whose name starts with the attachment ID.
+        candidates = sorted(UPLOAD_DIR.glob(f'{attachment_id}_*'), key=lambda p: p.stat().st_mtime, reverse=True)
+        if candidates:
+            path = candidates[0]
+            with get_conn() as conn:
+                conn.execute('UPDATE attachments SET stored_name = ? WHERE id = ?', (path.name, attachment_id))
+                conn.commit()
+        else:
+            raise HTTPException(status_code=404, detail='File không tồn tại trên máy chủ')
     return FileResponse(path, filename=row['original_name'])
 
 
