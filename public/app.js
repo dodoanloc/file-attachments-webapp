@@ -1,6 +1,7 @@
 const MAX_FILE_SIZE = 500 * 1024 * 1024;
 const STORAGE_KEY = 'file_attachments_user';
 const THEME_KEY = 'file-attachments-theme';
+const ARCHIVE_PASSWORD_SESSION_KEY = 'file-attachments-mis-archive-password';
 
 const $ = id => document.getElementById(id);
 
@@ -28,9 +29,13 @@ const els = {
   statementUploadBtn: $('statementUploadBtn'),
   statementStatus: $('statementStatus'),
   statementLatest: $('statementLatest'),
+  misReportBtn: $('misReportBtn'), misModal: $('misModal'), misCloseBtn: $('misCloseBtn'),
+  misUsername: $('misUsername'), misPassword: $('misPassword'), misArchivePassword: $('misArchivePassword'), misRememberArchivePassword: $('misRememberArchivePassword'), misListBtn: $('misListBtn'),
+  misReportSelect: $('misReportSelect'), misAttachBtn: $('misAttachBtn'), misStatus: $('misStatus'),
 };
 
 let session = null;
+try { const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null'); if (saved?.username) localStorage.setItem(STORAGE_KEY, JSON.stringify({username: saved.username, role: saved.role || ''})); } catch (_) {}
 
 /* ---------- Theme ---------- */
 function setTheme(t) {
@@ -89,7 +94,7 @@ function authQuery() {
 
 /* ---------- Auth ---------- */
 function applySession() {
-  session = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+  // Credentials live only in this tab's RAM. localStorage keeps username/role only.
   const loggedIn = !!session?.username && !!session?.password;
   document.body.classList.toggle('auth-pending', !loggedIn);
   els.loginCard.hidden = loggedIn;
@@ -114,7 +119,7 @@ async function login() {
     const json = await res.json();
     if (!res.ok || !json.success) throw new Error(json.detail || 'Đăng nhập thất bại');
     session = { username, password, role: json.user?.role || '' };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ username, role: session.role }));
     setStatus(els.loginStatus, 'Đăng nhập thành công.', 'success');
     applySession();
   } catch (err) {
@@ -277,13 +282,17 @@ async function deleteFile(id) {
 let currentStatementType = 'overdraft';
 const STATEMENT_LABELS = { overdraft: 'sao kê thấu chi', guarantee: 'sao kê bảo lãnh' };
 
+function downloadLatestStatement(type) {
+  triggerBrowserDownload(`/api/statements/latest/${encodeURIComponent(type)}/download`);
+}
+
 async function loadStatementLatest(type) {
   try {
     const res = await fetch(`/api/statements/latest/${encodeURIComponent(type)}`);
     const json = await res.json();
     if (!res.ok || !json.success) throw new Error(json.detail || 'Chưa có file');
     const item = json.item;
-    els.statementLatest.textContent = `File mới nhất: ${item.original_name} • ${fmtBytes(item.size)} • ${fmtDate(item.uploaded_at)} • ${item.path}`;
+    els.statementLatest.innerHTML = `File mới nhất: ${esc(item.original_name)} • ${fmtBytes(item.size)} • ${fmtDate(item.uploaded_at)} • <button class="secondary" type="button" onclick="downloadLatestStatement('${esc(currentStatementType)}')">Tải xuống</button>`;
   } catch (err) {
     els.statementLatest.textContent = 'Chưa có file sao kê loại này trên máy chủ.';
   }
@@ -328,11 +337,48 @@ async function uploadStatement() {
   }
 }
 
+/* ---------- MIS SMB reports ---------- */
+function openMisModal() {
+  els.misUsername.value = session?.username || localStorage.getItem('file-attachments-mis-username') || '';
+  els.misPassword.value = '';
+  const remembered = sessionStorage.getItem(ARCHIVE_PASSWORD_SESSION_KEY) || '';
+  els.misArchivePassword.value = remembered;
+  els.misRememberArchivePassword.checked = !!remembered;
+  els.misReportSelect.innerHTML='<option value="">Lấy danh sách trước</option>';
+  els.misReportSelect.disabled=true; els.misAttachBtn.disabled=true;
+  setStatus(els.misStatus, 'Nhập user và mật khẩu AD để xem danh sách báo cáo MIS.', 'info'); els.misModal.hidden=false;
+}
+function closeMisModal(){
+  els.misPassword.value='';
+  if (!els.misRememberArchivePassword.checked) els.misArchivePassword.value='';
+  els.misModal.hidden=true;
+}
+function syncArchivePasswordSession() {
+  if (els.misRememberArchivePassword.checked && els.misArchivePassword.value) sessionStorage.setItem('file-attachments-mis-archive-password', els.misArchivePassword.value);
+  else sessionStorage.removeItem('file-attachments-mis-archive-password');
+}
+function misPayload(extra={}) { return { app_username: session?.username||'', app_password: session?.password||'', ad_username: els.misUsername.value.trim(), ad_password: els.misPassword.value, archive_password: els.misArchivePassword.value, ...extra }; }
+async function listMisReports(){
+  const payload=misPayload(); if(!payload.ad_username||!payload.ad_password) return setStatus(els.misStatus,'Nhập user và mật khẩu AD.','error');
+  els.misListBtn.disabled=true; setStatus(els.misStatus,'Đang đọc danh sách báo cáo từ MIS...','info');
+  try { const res=await fetch('/api/mis/reports',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}); const json=await res.json(); if(!res.ok||!json.success) throw new Error(json.detail||'Không lấy được danh sách báo cáo');
+    localStorage.setItem('file-attachments-mis-username',payload.ad_username); const items=json.items||[]; els.misReportSelect.innerHTML=items.length?items.map(x=>`<option value="${esc(x.name)}">${esc(x.display_name||x.name)} • ${esc(fmtBytes(x.size))}${x.modified_at?' • '+esc(fmtDate(x.modified_at)):''}</option>`).join(''):'<option value="">Không có file .zip trong thư mục báo cáo ngày mới nhất của MIS.</option>'; els.misReportSelect.disabled=!items.length; els.misAttachBtn.disabled=!items.length; setStatus(els.misStatus,items.length?`Tìm thấy ${items.length} file ZIP trong thư mục ngày mới nhất. Chọn một file để đính kèm.`:'Không có file .zip trong thư mục báo cáo ngày mới nhất của MIS.','info');
+  } catch(err){ setStatus(els.misStatus,err.message||'Không lấy được danh sách báo cáo.','error'); } finally { els.misListBtn.disabled=false; }
+}
+async function attachMisReport(){
+  syncArchivePasswordSession();
+  const payload=misPayload({report_name:els.misReportSelect.value}); if(!payload.report_name) return setStatus(els.misStatus,'Chọn báo cáo cần đính kèm.','error');
+  els.misAttachBtn.disabled=true; setStatus(els.misStatus,`Đang sao chép ${payload.report_name} từ MIS...`,'info');
+  try { const res=await fetch('/api/mis/attach',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}); const json=await res.json(); if(!res.ok||!json.success) throw new Error(json.detail||'Không thể đính kèm báo cáo'); setStatus(els.misStatus,`Đã đính kèm ${json.item.original_name}.`,'success'); await loadFiles(); }
+  catch(err){ setStatus(els.misStatus,err.message||'Không thể đính kèm báo cáo.','error'); } finally { els.misPassword.value=''; if (!els.misRememberArchivePassword.checked) els.misArchivePassword.value=''; els.misAttachBtn.disabled=false; }
+}
+
 /* ---------- Events ---------- */
 els.loginBtn.addEventListener('click', login);
 els.passwordInput.addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
 els.logoutBtn.addEventListener('click', logout);
 els.uploadBtn.addEventListener('click', uploadFile);
+els.misReportBtn.addEventListener('click', openMisModal); els.misCloseBtn.addEventListener('click', closeMisModal); els.misListBtn.addEventListener('click', listMisReports); els.misAttachBtn.addEventListener('click', attachMisReport); els.misRememberArchivePassword.addEventListener('change', syncArchivePasswordSession); els.misArchivePassword.addEventListener('input', () => { if (els.misRememberArchivePassword.checked) syncArchivePasswordSession(); }); els.misModal.addEventListener('click', e=>{if(e.target===els.misModal)closeMisModal()});
 els.refreshBtn.addEventListener('click', loadFiles);
 els.overdraftStatementBtn.addEventListener('click', () => openStatementModal('overdraft'));
 els.guaranteeStatementBtn.addEventListener('click', () => openStatementModal('guarantee'));
