@@ -6,7 +6,7 @@
   <script>document.documentElement.dataset.theme=localStorage.getItem('file-attachments-theme')||'light'</script>
   <link rel="preload" href="assets/fonts/InterVariable.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="icon" href="assets/img/logo_agribank.png">
-  <link rel="stylesheet" href="styles.css?v=20260827-hdclone5-fixmodal">
+  <link rel="stylesheet" href="styles.css?v=20260920-file-dropzone1">
 </head>
 <body class="auth-pending">
 <section id="login" class="login-wrap auth-panel-wrap" hidden>
@@ -69,12 +69,17 @@
             <small style="color:var(--hd-text-light)">Chọn một hoặc nhiều file/ảnh. File tự xoá sau 7 ngày.</small>
           </div>
           <div class="actions">
-            <button id="overdraftStatementBtn" class="danger" type="button">Đính kèm sao kê thấu chi</button>
+            <button id="misReportBtn" class="primary" type="button">Lấy báo cáo SMB</button><button id="overdraftStatementBtn" class="danger" type="button">Đính kèm sao kê thấu chi</button>
             <button id="guaranteeStatementBtn" class="danger" type="button">Đính kèm sao kê bảo lãnh</button>
           </div>
         </div>
-        <div class="upload-row">
-          <input id="fileInput" type="file" multiple>
+        <label class="dz-source-drop" id="fileDropzone" for="fileInput">
+          <span class="dz-cloud-icon">☁</span>
+          <span class="dz-drop-label">Kéo thả file/ảnh vào đây</span>
+          <span class="dz-drop-hint">hoặc bấm để chọn file từ máy tính (tối đa 500 MB)</span>
+          <input id="fileInput" type="file" multiple style="position:absolute;width:1px;height:1px;opacity:0;">
+        </label>
+        <div style="margin-top:10px;display:flex;justify-content:flex-end;">
           <button id="uploadBtn" class="primary" type="button">Tải lên</button>
         </div>
         <div id="uploadStatus" class="status info">Chọn một hoặc nhiều file/ảnh để tải lên máy chủ.</div>
@@ -125,6 +130,17 @@
     <div id="statementLatest" class="muted small"></div>
   </div>
 </div>
-<script src="app.js?v=20260827-hdclone5-fixmodal"></script>
+<div id="misModal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="misModalTitle">
+  <div class="modal-card card">
+    <div class="row wrap"><div><h2 id="misModalTitle">Lấy báo cáo từ MIS</h2><p class="muted" style="color:var(--hd-text-light)">Đường dẫn MIS: MSSR08/3511. Mật khẩu AD chỉ dùng cho lần lấy file này, không được lưu.</p></div><button id="misCloseBtn" class="secondary" type="button">Đóng</button></div>
+    <div class="search-grid"><label>User AD<input id="misUsername" autocomplete="username" placeholder="corp.agribank.com.vn\user" required></label><label>Mật khẩu AD<input id="misPassword" type="password" autocomplete="current-password" placeholder="Mật khẩu AD" required></label><label>Mật khẩu giải nén ZIP <span class="muted">(tùy chọn)</span><input id="misArchivePassword" type="password" autocomplete="new-password" placeholder="Để trống: đính kèm ZIP; nhập: lấy CSV"></label><label class="check-row"><input id="misRememberArchivePassword" type="checkbox"> Giữ mật khẩu giải nén trong phiên này</label></div>
+    <div class="toolbar-inline"><button id="misListBtn" class="secondary" type="button">Lấy danh sách</button></div>
+    <label>Báo cáo MIS<select id="misReportSelect" disabled><option value="">Lấy danh sách trước</option></select></label>
+    <div class="toolbar-inline"><button id="misAttachBtn" class="primary" type="button" disabled>Đính kèm file đã chọn</button></div>
+    <div id="misStatus" class="status info">Nhập user và mật khẩu AD để xem danh sách báo cáo.</div>
+  </div>
+</div>
+
+<script src="app.js?v=20260920-file-dropzone1"></script>
 </body>
 </html>

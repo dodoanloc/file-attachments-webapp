@@ -14,3 +14,10 @@ data/
 *.sqlite
 *.sqlite3
 *.db
+
+*.db-*
+*.sqlite*
+*.bak*
+*.env*
+data/*.db
+deploy/*.env*

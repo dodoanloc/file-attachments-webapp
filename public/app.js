@@ -375,6 +375,23 @@ async function attachMisReport(){
 
 /* ---------- Events ---------- */
 els.loginBtn.addEventListener('click', login);
+els.fileInput.addEventListener('change', () => {
+  const files = Array.from(els.fileInput.files || []);
+  if (files.length) setStatus(els.uploadStatus, `Đã chọn ${files.length} file: ${files.map(f => f.name).join(', ')}`, 'info');
+});
+
+const fileDropzone = $('fileDropzone');
+if (fileDropzone) {
+  ['dragenter', 'dragover'].forEach(type => fileDropzone.addEventListener(type, e => { e.preventDefault(); fileDropzone.classList.add('is-dragover'); }));
+  ['dragleave', 'drop'].forEach(type => fileDropzone.addEventListener(type, e => { e.preventDefault(); fileDropzone.classList.remove('is-dragover'); }));
+  fileDropzone.addEventListener('drop', e => {
+    const files = e.dataTransfer.files;
+    if (!files || !files.length || !els.fileInput) return;
+    els.fileInput.files = files;
+    setStatus(els.uploadStatus, `Đã chọn ${files.length} file: ${Array.from(files).map(f => f.name).join(', ')}`, 'info');
+  });
+}
+
 els.passwordInput.addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
 els.logoutBtn.addEventListener('click', logout);
 els.uploadBtn.addEventListener('click', uploadFile);
